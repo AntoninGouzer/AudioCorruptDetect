@@ -11,7 +11,7 @@ This default is observed during audio CD ripping.
 
 # Commande line Example
 (4 samples threshold) : 
-./AudioCorruptDetect -i 2002B09531SC0076_02vburst_extrait.wav -SampleHold -sampleHoldTresh 4 -mergeTimeHoldSec 0 -audacityMode
+./AudioCorruptDetect -i in.wav -SampleHold -sampleHoldTresh 4 -mergeTimeHoldSec 0 -audacityMode
 
 The output is compatible with Audacity Marker files:
 
