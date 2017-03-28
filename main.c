@@ -22,25 +22,23 @@
 ------------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <string.h>
 #include <ctype.h>
 #include "sound.h"
 #include "AudioCorruptDetect.h"
 
 /*----------------------------------------------------------------------------*/
-static void print_usage (char *progname,double K,int b,int p,int Nw,int T,int Aud,int SampleHold,int sampleHoldTresh)
+static void print_usage (char *progname, int clicksDetect,int audacityMode,int SampleHoldDetect,int sampleHoldTresh,int mergeTimeHoldSec )
 {
-    fprintf(stderr,"usage: AudioCorruptDetect in.wav out.wav [K b p Nw]\n"
+    fprintf(stderr,"usage: AudioCorruptDetect -i in.wav [OPTIONS]\n"
                      "optional parameters:\n"
-                     "       K: threshold parameter    (default value %0.2f)\n"
-                     "       b: burst fusion parameter (default value %d)\n"
-                     "       p: order of AR model      (default value %d)\n"
-                     "       Nw: window size           (default value %d)\n"
-                     "       T: Test Mode , no output file (default value %d)\n"
-                     "       Aud: Audacity Mode ,  output Audacity Marker Std Out (default value %d)\n"
-		     "       SampleHold: Detect consecutive same sample Values , (default value %d)\n"
-		     "       sampleHoldTresh:Number of  consecutive same sample Values , (default value %d)\n" ,
-                     K,b,p,Nw,T,Aud,SampleHold,sampleHoldTresh);
+                     "       -audacityMode: Audacity Mode ,  output Audacity Marker Std Out (default value %d)\n"
+                     "       -clicksDetect: Detect consecutive same sample Values , (default value %d)\n"
+		     "       -SampleHoldDetect: Detect consecutive same sample Values , (default value %d)\n"
+		     "       -sampleHoldTresh x:Number of  consecutive same sample Values , (default value %d)\n"
+		     "       -mergeTimeHoldSec x:Number seconds for merging Sample Holds alerts, (default value %d)\n" ,
+                     clicksDetect,audacityMode,SampleHoldDetect,sampleHoldTresh,mergeTimeHoldSec);
       exit(EXIT_FAILURE);
 
 } /* print_usage */
@@ -48,7 +46,7 @@ static void print_usage (char *progname,double K,int b,int p,int Nw,int T,int Au
 
 int main(int argc, char ** argv)
 {
-    char  *progname, *infilename, *outfilename ;
+    char  *progname, *infilename ;
     SNDFILE		*infile = NULL ;
     FILE		*outfile = NULL ;
     SF_INFO		sfinfo ;
@@ -61,11 +59,12 @@ int main(int argc, char ** argv)
   int p = 3*100+2;   /* Order of the model */
   int Nw = 8*p;      /* Window length */
   int T = 0; /*Test Mode, Wav output generated*/
-  int Aud= 0; /*Audacity Mode,  output Audacity marker Std Out*/
-  int SampleHold= 0; /*Detect consecutive same sample Values*/
-  int sampleHoldTresh= 3; /* Number of  consecutive same sample Values*/
-  int mergeTimeHoldsFeMultiplier=1;
-  int mergeTimeHolds=0;
+  static int audacityMode= 0; /*Audacity Mode,  output Audacity marker Std Out*/
+  static int SampleHoldDetect= 0; /*Detect consecutive same sample Values*/
+  static int clicksDetect= 0; /*Detect consecutive same sample Values*/
+  int sampleHoldTresh= 4; /* Number of  consecutive same sample Values*/
+  int  mergeTimeHoldSamples=0;
+  int mergeTimeHoldSec=0;
   long nLongBuffer=100000;
   long readCount=0;
   Sound * signal = NULL;
@@ -76,37 +75,86 @@ int main(int argc, char ** argv)
   long numAudioSamples = 0;
   int numChannels =0;
   int res;
-  int i,c;
+  int i,c,n;
 
   /* read input input */
-  if( argc < 3 )
+  if( argc < 2 )
     {
-     print_usage (progname,K,b,p,Nw,T,Aud,SampleHold,sampleHoldTresh) ;
+     print_usage (progname,clicksDetect,audacityMode,SampleHoldDetect,sampleHoldTresh,mergeTimeHoldSec) ;
      return 1 ;
     }
 
-    infilename = argv [1] ;
-     outfilename = argv [2] ;
+  while (1)
+    {
+      static struct option long_options[] =
+        {
+          /* These options set a flag. */
+        {"infilename",     required_argument,       0, 'i'},
+          {"SampleHoldDetect", no_argument,       &SampleHoldDetect, 1},
+          {"clicksDetect",   no_argument,       &clicksDetect, 1},
+          {"sampleHoldTresh",  required_argument,       0, 't'},
+          {"mergeTimeHoldSec",  required_argument, 0, 'm'},
+          {"audacityMode",  no_argument, &audacityMode, 1},
+          {0, 0, 0, 0}
+        };
+      /* getopt_long stores the option index here. */
+      int option_index = 0;
 
-if (strcmp (infilename, outfilename) == 0)
-	{	printf ("Error : Input and output filenames are the same.\n\n") ;
-		 print_usage (progname,K,b,p,Nw,T,Aud,SampleHold,sampleHoldTresh) ;
-		return 1 ;
-		} ;
+      n = getopt_long_only (argc, argv, "i:t:m:",
+                       long_options, &option_index);
+
+      /* Detect the end of the options. */
+      if (n == -1)
+        break;
+
+      switch (n)
+        {
+        case 0:
+          /* If this option set a flag, do nothing else now. */
+          if (long_options[option_index].flag != 0)
+            break;
+          if (optarg)
+          break;
+
+        case 'i':
+          infilename= optarg;
+          break;
+
+        case 't':
+          sampleHoldTresh= atoi(optarg);
+          break;
+
+        case 'm':
+          mergeTimeHoldSec= atoi(optarg);
+          break;
+
+        case '?':
+          /* getopt_long already printed an error message. */
+          break;
+
+        default:
+          abort ();
+        }
+    }
+
+  /* Print any remaining command line arguments (not options). */
+  if (optind < argc)
+    {
+      printf ("Be carefull, this arguments are incorrects: ");
+      while (optind < argc)
+        printf ("%s ", argv[optind++]);
+      putchar ('\n');
+    }
+
 
 	if (infilename [0] == '-')
 	{	printf ("Error : Input filename (%s) looks like an option.\n\n", infilename) ;
-		 print_usage (progname,K,b,p,Nw,T,Aud,SampleHold,sampleHoldTresh) ;
-		return 1 ;
-		} ;
-
-	if (outfilename [0] == '-')
-	{	printf ("Error : Output filename (%s) looks like an option.\n\n", outfilename) ;
-		 print_usage (progname,K,b,p,Nw,T,Aud,SampleHold,sampleHoldTresh) ;
+		 print_usage (progname,clicksDetect,audacityMode,SampleHoldDetect,sampleHoldTresh,mergeTimeHoldSec) ;
 		return 1 ;
 		} ;
 
     memset (&sfinfo, 0, sizeof (sfinfo)) ;
+
     if ((infile = sf_open (infilename, SFM_READ, &sfinfo)) == NULL)
 	{	printf ("Not able to open input file %s.\n", infilename) ;
 		puts (sf_strerror (NULL)) ;
@@ -117,29 +165,21 @@ if (strcmp (infilename, outfilename) == 0)
     numChannels = sfinfo.channels;
 
 
-  if( argc >= 4 ) K  = atof(argv[3]);
-  if( argc >= 5 ) b  = atoi(argv[4]);
-  if( argc >= 6 ) p  = atoi(argv[5]);
-  if( argc >= 7 ) Nw = atoi(argv[6]);
-  if( argc >= 8 ) T = atoi(argv[7]);
-  if( argc >= 9 ) Aud = atoi(argv[8]);
-  if( argc >= 10) SampleHold = atoi(argv[9]);
-  if( argc >= 11) sampleHoldTresh = atoi(argv[10]);
 
- if(Aud==0)
+ if(audacityMode==0)
 {
   printf("input signal: %d channels, %ld samples\n",
          numChannels,numAudioSamples);
-  printf("parameters: K=%.2f b=%d p=%d Nw=%d T=%d Aud=%d\n\n",K,b,p,Nw,T,Aud);
+  printf("parameters: K=%.2f b=%d p=%d Nw=%d T=%d audacityMode=%d\n\n",K,b,p,Nw,T,audacityMode);
 }
 
 /*Sample Hold Detect  Mode*/
-if (SampleHold==1)
+if (SampleHoldDetect==1)
 {
 //integration time of events
-mergeTimeHolds=mergeTimeHoldsFeMultiplier * sfinfo.samplerate;
+mergeTimeHoldSamples=mergeTimeHoldSec * sfinfo.samplerate;
 
-    res=sample_hold_detect (infile, sfinfo.channels,sfinfo.samplerate, sampleHoldTresh,mergeTimeHolds) ;
+    res=sample_hold_detect (infile, sfinfo.channels,sfinfo.samplerate, sampleHoldTresh,mergeTimeHoldSamples) ;
     sf_close (infile) ;
 
 }
