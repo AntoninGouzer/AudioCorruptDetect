@@ -43,3 +43,13 @@ The output is compatible with Audacity Marker files:
 7.59692	7.59692	End Level beyond the threshold (-18.00): -12.96 dB , channel #0 
 
 7.59692	7.59692	End Level beyond the threshold (-18.00): -12.55 dB , channel #1 
+
+
+# Todo
+
+- Digital mute detection
+- Clipping detection
+- Digital click detection
+- analog click detection
+
+
