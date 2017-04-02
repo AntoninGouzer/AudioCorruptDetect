@@ -4,8 +4,8 @@ Currently supported:
 
 −> Detection of consecutive identical Samples values [SampleHoldDetect]
 This default is observed during audio CD ripping.
-−> Detection Hard cut start and End of files [CutStartDetect,CutEndDetect]
-Files with start and end level beyon a treshhold (ex > -18 dB)
+−> Detection of anormal "hard cut" start and End of files [CutStartDetect,CutEndDetect]
+Files with which start and end at a level beyond a treshhold (ex > -18 dB)
 
 
 # Install
