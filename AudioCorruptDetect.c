@@ -537,8 +537,6 @@ int sample_hold_detect (SNDFILE * infile, int channels,int sampleRate,int sample
 	while ((readcount = sf_readf_float (infile, buf, BLOCK_SIZE)) > 0)
 	{
 
-		/*printf("currSampleIndex: %ld\n",currSampleIndex);
-		printf("readcount: %d\n",readcount);*/
 		for (k = 0 ; k < readcount ; k++)
         {
             currSampleIndex++;
@@ -599,4 +597,71 @@ int sample_hold_detect (SNDFILE * infile, int channels,int sampleRate,int sample
 	return 1;
 }
 
+int start_cut_detect (SNDFILE * infile, SF_INFO * sfinfo,int startCutTresh, int NumSamples)
+{
+    int k, m, readcount, dBValue,sampleRate,channels ;
+    sampleRate = sfinfo->samplerate;
+    channels = sfinfo->channels;
+
+    double buf [channels * NumSamples] ;
+    double  currSample,currdBLevel;
+	long currSampleIndex =0;
+
+	if ((readcount = sf_readf_double(infile, buf, NumSamples)) > 0)
+	{
+
+		for (k = 0 ; k < readcount ; k++)
+        {
+            currSampleIndex++;
+			for (m = 0 ; m < channels ; m++)
+			{
+			    currSample = buf [k * channels + m];
+			    currdBLevel = calc_decibels(sfinfo,currSample);
+                if (currdBLevel > (double)(startCutTresh) )
+                {
+                printf("%0.5f	%0.5f	Start Level beyond the threshold (%4.2f): %4.2f dB, channel #%d \n",(double)(currSampleIndex) / sampleRate,(double)(currSampleIndex) / sampleRate,(double)(startCutTresh),currdBLevel,m);
+                }
+
+            }
+        }
+	}
+	return 1;
+}
+
+int end_cut_detect (SNDFILE * infile, SF_INFO * sfinfo,int endCutTresh, int NumSamples)
+{
+int k, m, readcount, dBValue,sampleRate,channels ;
+    sampleRate = sfinfo->samplerate;
+    channels = sfinfo->channels;
+
+    double buf [channels * NumSamples] ;
+    double  currSample,currdBLevel;
+	long currSampleIndex =0;
+    currSampleIndex = sf_seek(infile,-NumSamples,SEEK_END);
+    if (currSampleIndex > 0)
+    {
+       if ((readcount = sf_readf_double(infile, buf, NumSamples)) > 0)
+	{
+
+
+		for (k = 0 ; k < readcount ; k++)
+        {
+            currSampleIndex++;
+			for (m = 0 ; m < channels ; m++)
+			{
+			    currSample = buf [k * channels + m];
+			    currdBLevel = calc_decibels(sfinfo,currSample);
+                if (currdBLevel > (double)(endCutTresh) )
+                {
+                printf("%0.5f	%0.5f	End Level beyond the threshold (%4.2f): %4.2f dB , channel #%d \n",(double)(currSampleIndex) / sampleRate,(double)(currSampleIndex) / sampleRate,(double)(endCutTresh),currdBLevel,m);
+                }
+
+            }
+        }
+	}
+
+    }
+
+	return 1;
+}
 /*----------------------------------------------------------------------------*/

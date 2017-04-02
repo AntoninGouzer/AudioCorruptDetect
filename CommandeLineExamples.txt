@@ -1,4 +1,1 @@
-./AudioCorruptDetect -i 2002B09531SC0076_02vburst_extrait.wav -SampleHold -sampleHoldTresh 4 -mergeTimeHoldSec 0 -audacityMode
-
-
-
+./AudioCorruptDetect --i endcut.wav --SampleHold --sampleHoldTresh 4 --mergeTimeHoldSec 0 --audacityMode --CutStartDetect --CutEndDetect --CutEndTreshdB -18 CutStartTreshdB -18

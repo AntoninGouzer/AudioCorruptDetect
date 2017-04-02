@@ -58,5 +58,9 @@ int * sampleHoldDetect(double * signal, int N, int sampleHoldTresh,int mergeTime
 
 int sample_hold_detect (SNDFILE * infile, int channels,int sampleRate,int sampleHoldTresh,int mergeTimeHolds);
 
+int start_cut_detect (SNDFILE * infile, SF_INFO * sfinfo,int startCutTresh, int NumSamples);
+
+int end_cut_detect (SNDFILE * infile, SF_INFO * sfinfo,int endCutTresh,int NumSamples);
+
 #endif /* !ADRINAS_HEADER */
 /*----------------------------------------------------------------------------*/

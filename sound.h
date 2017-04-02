@@ -47,6 +47,7 @@ void soundClean(Sound * S);
 Sound * audioReadFull(const char * infile);
 Sound * audioRead(const char * infile, long n1, long n2);
 void audioWrite(Sound * S, const char * outfile);
+double calc_decibels (SF_INFO * sfinfo, double level);
 
 #endif
 /*----------------------------------------------------------------------------*/

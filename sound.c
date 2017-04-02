@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "sound.h"
+#include <math.h>
 
 #define BLOCK_SIZE 512
 
@@ -286,5 +287,39 @@ void audioWrite(Sound * S, const char * outfile)
   free(buf);
   sf_close(f);
 }
+
+/*----------------------------------------------------------------------------*/
+double calc_decibels (SF_INFO * sfinfo, double level)
+{	double decibels ;
+	switch (sfinfo->format & SF_FORMAT_SUBMASK)
+	{	case SF_FORMAT_PCM_U8 :
+		case SF_FORMAT_PCM_S8 :
+			decibels = level / 0x80 ;
+			break ;
+
+		case SF_FORMAT_PCM_16 :
+			decibels = level / 0x8000 ;
+			break ;
+
+		case SF_FORMAT_PCM_24 :
+			decibels = level / 0x800000 ;
+			break ;
+
+		case SF_FORMAT_PCM_32 :
+			decibels = level / 0x80000000 ;
+			break ;
+
+		case SF_FORMAT_FLOAT :
+		case SF_FORMAT_DOUBLE :
+			decibels = level / 1.0 ;
+			break ;
+
+		default :
+			decibels = level / 0x8000 ;
+			break ;
+		} ;
+
+	return 20.0 * log10 (fabs(level)) ;
+} /* calc_decibels */
 
 /*----------------------------------------------------------------------------*/
