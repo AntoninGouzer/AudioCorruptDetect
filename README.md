@@ -17,7 +17,7 @@ See CommandeLineExamples.txt
 
 The output is compatible with Audacity Marker files:
 
-0.00002	0.00002	Start Level beyond the threshold (-18.00): -5.62 dB, channel #0 
+0.00002	0.00002	Start Level beyond the threshold (-18.00): -5.62 dB, channel #0 \n
 0.00002	0.00002	Start Level beyond the threshold (-18.00): -5.57 dB, channel #1 
 0.02941	0.02941	Suspicious Sample Hold of  4 samples, channel 1 
 0.03290	0.03290	Suspicious Sample Hold of  4 samples, channel 0 
