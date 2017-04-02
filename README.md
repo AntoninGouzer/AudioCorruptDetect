@@ -1,7 +1,12 @@
 # AudioCorruptDetect
 Automatic detection of Digital degradations in audio files.
-V1.0: Detection of consecutive identical Samples values.
+Currently supported:
+
+−> Detection of consecutive identical Samples values [SampleHoldDetect]
 This default is observed during audio CD ripping.
+−> Detection Hard cut start and End of files [CutStartDetect,CutEndDetect]
+Files with start and end level beyon a treshhold (ex > -18 dB)
+
 
 # Install
 - Clone the repository
@@ -11,7 +16,7 @@ This default is observed during audio CD ripping.
 
 # Commande line Example
 (4 samples threshold) : 
-./AudioCorruptDetect --i endcut.wav --SampleHold --sampleHoldTresh 4 --mergeTimeHoldSec 0 --audacityMode --CutStartDetect --CutEndDetect --CutEndTreshdB -18 CutStartTreshdB -18
+./AudioCorruptDetect --i endcut.wav --SampleHoldDetect --sampleHoldTresh 4 --mergeTimeHoldSec 0 --audacityMode --CutStartDetect --CutEndDetect --CutEndTreshdB -18 CutStartTreshdB -18
 
 See CommandeLineExamples.txt
 
